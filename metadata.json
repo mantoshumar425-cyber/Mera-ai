@@ -1,0 +1,8 @@
+{
+  "name": "Mera AI",
+  "description": "ChatGPT-style AI chatbot supporting Hindi, Hinglish, and English powered by Google Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

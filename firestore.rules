@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User profile documents
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow create: if isValidId(userId) && isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isValidId(userId) && isOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      // User's private conversation collection
+      match /conversations/{conversationId} {
+        allow get: if isValidId(userId) && isValidId(conversationId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId);
+        allow create: if isValidId(userId) && isValidId(conversationId) && isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isValidId(userId) && isValidId(conversationId) && isOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isValidId(userId) && isValidId(conversationId) && isOwner(userId);
+      }
+    }
+  }
+}
